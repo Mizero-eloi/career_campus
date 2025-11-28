@@ -41,7 +41,7 @@ An online career guidance platform that helps students discover career paths, co
 - **Node.js** - Runtime environment
 - **Express** - Web framework
 - **TypeScript** - Type safety
-- **MySQL** - Database
+- **SQLite/MySQL** - Database
 - **JWT** - Authentication
 - **bcryptjs** - Password hashing
 - **express-validator** - Input validation
@@ -52,9 +52,21 @@ An online career guidance platform that helps students discover career paths, co
 career_campus/
 ├── frontend/          # Next.js application
 │   ├── app/          # App router pages
+│   │   ├── dashboard/  # Dashboard pages (admin, counselor, student)
+│   │   ├── login/      # Login page
+│   │   ├── register/   # Registration page
+│   │   └── layout.tsx  # Root layout
 │   ├── components/   # React components
-│   ├── contexts/     # React contexts
-│   └── lib/          # Utilities and API client
+│   │   ├── layout/     # Layout components (Navbar, etc.)
+│   │   └── ui/         # shadcn/ui components
+│   ├── contexts/     # React contexts (AuthContext)
+│   ├── lib/          # Utilities and API client
+│   │   ├── api.ts     # Axios API client
+│   │   ├── auth.ts    # Auth utilities
+│   │   └── utils.ts   # General utilities
+│   ├── public/       # Static assets
+│   ├── package.json  # Dependencies
+│   └── next.config.ts # Next.js configuration
 ├── backend/          # Node.js API server
 │   ├── src/
 │   │   ├── config/   # Database configuration
@@ -69,35 +81,93 @@ career_campus/
 ## Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
-- MySQL 8+
-- npm or yarn
+- **Node.js 18+** (for both frontend and backend)
+- **npm** or **yarn** package manager
+- **MySQL 8+** (for backend, or SQLite for development)
 
-### Database Setup
+### Frontend Setup
 
-1. Create a MySQL database:
-```sql
-CREATE DATABASE career_compass;
+The frontend is a standalone Next.js application that can be run independently.
+
+1. **Navigate to frontend directory:**
+```bash
+cd frontend
 ```
 
-2. Run the schema:
+2. **Install dependencies:**
 ```bash
-mysql -u root -p career_compass < backend/database/schema.sql
+npm install
+# or
+yarn install
+```
+
+3. **Create environment file:**
+   
+   Create a `.env.local` file in the `frontend` directory:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+```
+
+   For production, update the API URL to your backend server:
+```env
+NEXT_PUBLIC_API_URL=https://your-api-domain.com/api
+```
+
+4. **Start the development server:**
+```bash
+npm run dev
+# or
+yarn dev
+```
+
+5. **Open your browser:**
+   
+   Navigate to [http://localhost:3000](http://localhost:3000) to see the application.
+
+### Frontend Development Commands
+
+```bash
+# Development server (with hot reload)
+npm run dev
+
+# Production build
+npm run build
+
+# Start production server
+npm start
+
+# Run linter
+npm run lint
 ```
 
 ### Backend Setup
 
-1. Navigate to backend directory:
+1. **Navigate to backend directory:**
 ```bash
 cd backend
 ```
 
-2. Install dependencies:
+2. **Install dependencies:**
 ```bash
 npm install
 ```
 
-3. Create `.env` file (copy from `.env.example`):
+3. **Database Setup:**
+   
+   For MySQL:
+   ```sql
+   CREATE DATABASE career_compass;
+   ```
+   ```bash
+   mysql -u root -p career_compass < backend/database/schema.sql
+   ```
+   
+   For SQLite (development):
+   ```bash
+   # SQLite database will be created automatically
+   ```
+
+4. **Create `.env` file:**
 ```env
 PORT=5000
 NODE_ENV=development
@@ -111,36 +181,12 @@ JWT_EXPIRES_IN=7d
 CORS_ORIGIN=http://localhost:3000
 ```
 
-4. Start the server:
+5. **Start the server:**
 ```bash
 npm run dev
 ```
 
 The backend will run on `http://localhost:5000`
-
-### Frontend Setup
-
-1. Navigate to frontend directory:
-```bash
-cd frontend
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Create `.env.local` file:
-```env
-NEXT_PUBLIC_API_URL=http://localhost:5000/api
-```
-
-4. Start the development server:
-```bash
-npm run dev
-```
-
-The frontend will run on `http://localhost:3000`
 
 ## API Endpoints
 
@@ -180,6 +226,20 @@ The frontend will run on `http://localhost:3000`
 
 ## Development
 
+### Running Both Frontend and Backend
+
+1. **Terminal 1 - Backend:**
+```bash
+cd backend
+npm run dev
+```
+
+2. **Terminal 2 - Frontend:**
+```bash
+cd frontend
+npm run dev
+```
+
 ### Backend Development
 ```bash
 cd backend
@@ -191,10 +251,87 @@ npm start  # Runs compiled JavaScript
 ### Frontend Development
 ```bash
 cd frontend
-npm run dev  # Development server
+npm run dev  # Development server (http://localhost:3000)
 npm run build  # Production build
 npm start  # Production server
+npm run lint  # Run ESLint
 ```
+
+## Environment Variables
+
+### Frontend Environment Variables
+
+Create a `.env.local` file in the `frontend` directory:
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `NEXT_PUBLIC_API_URL` | Backend API URL | `http://localhost:5000/api` | Yes |
+
+**Example:**
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+```
+
+### Backend Environment Variables
+
+Create a `.env` file in the `backend` directory:
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `PORT` | Server port | `5000` | No |
+| `NODE_ENV` | Environment mode | `development` | No |
+| `DB_HOST` | Database host | `localhost` | Yes |
+| `DB_USER` | Database user | `root` | Yes |
+| `DB_PASSWORD` | Database password | - | Yes |
+| `DB_NAME` | Database name | `career_compass` | Yes |
+| `DB_PORT` | Database port | `3306` | No |
+| `JWT_SECRET` | JWT secret key | - | Yes |
+| `JWT_EXPIRES_IN` | JWT expiration | `7d` | No |
+| `CORS_ORIGIN` | CORS allowed origin | `http://localhost:3000` | No |
+
+## Deployment
+
+### Frontend Deployment
+
+#### Deploy to Vercel (Recommended)
+
+1. Push your code to GitHub
+2. Import your repository on [Vercel](https://vercel.com)
+3. Set the root directory to `frontend`
+4. Add environment variable:
+   - `NEXT_PUBLIC_API_URL`: Your backend API URL
+5. Deploy
+
+#### Deploy to Other Platforms
+
+1. Build the application:
+```bash
+cd frontend
+npm run build
+```
+
+2. Start the production server:
+```bash
+npm start
+```
+
+3. Set environment variables on your hosting platform:
+   - `NEXT_PUBLIC_API_URL`: Your backend API URL
+
+### Backend Deployment
+
+1. Build the TypeScript code:
+```bash
+cd backend
+npm run build
+```
+
+2. Start the production server:
+```bash
+npm start
+```
+
+3. Ensure all environment variables are set on your hosting platform
 
 ## Database Schema
 
@@ -218,6 +355,75 @@ The database includes the following main tables:
 - Input validation with express-validator
 - CORS configuration
 - SQL injection protection with parameterized queries
+
+## Troubleshooting
+
+### Frontend Issues
+
+**Issue: API calls failing**
+- Check that `NEXT_PUBLIC_API_URL` is set correctly in `.env.local`
+- Ensure the backend server is running
+- Check browser console for CORS errors
+
+**Issue: Build errors**
+- Clear `.next` folder: `rm -rf frontend/.next`
+- Reinstall dependencies: `rm -rf node_modules && npm install`
+- Check TypeScript errors: `npm run lint`
+
+**Issue: Port already in use**
+- Change the port: `npm run dev -- -p 3001`
+- Or kill the process using port 3000
+
+### Backend Issues
+
+**Issue: Database connection failed**
+- Verify database credentials in `.env`
+- Ensure database server is running
+- Check database exists: `SHOW DATABASES;`
+
+**Issue: JWT errors**
+- Ensure `JWT_SECRET` is set in `.env`
+- Use a strong, random secret key in production
+
+## Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Code Style
+
+- Follow TypeScript best practices
+- Use ESLint for code linting
+- Follow the existing code structure and naming conventions
+- Add comments for complex logic
+
+## Frontend Structure Details
+
+### Pages (`app/` directory)
+- `page.tsx` - Landing page
+- `login/page.tsx` - User login
+- `register/page.tsx` - User registration
+- `dashboard/page.tsx` - Main dashboard
+- `dashboard/student/page.tsx` - Student dashboard
+- `dashboard/counselor/page.tsx` - Counselor dashboard
+- `dashboard/admin/page.tsx` - Admin dashboard
+
+### Components (`components/` directory)
+- `layout/Navbar.tsx` - Navigation bar component
+- `ui/` - Reusable UI components (shadcn/ui)
+
+### Contexts (`contexts/` directory)
+- `AuthContext.tsx` - Authentication context for managing user state
+
+### Libraries (`lib/` directory)
+- `api.ts` - Axios instance with interceptors for API calls
+- `auth.ts` - Authentication utilities
+- `utils.ts` - General utility functions
 
 ## License
 
